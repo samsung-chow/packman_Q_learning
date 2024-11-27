@@ -63,6 +63,27 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
+        # loop through the iterations
+        for i in range(self.iterations):
+            res = self.values.copy()
+
+            for state in self.mdp.getStates():
+                actions = self.mdp.getPossibleActions(state)
+
+                if not actions: # no possible actions
+                    res[state] = 0
+                    continue
+
+                maxq = float('-inf')
+                for action in actions:
+                    tmp = self.computeQValueFromValues(state, action)
+                    if tmp > maxq:
+                        maxq = tmp
+                
+                res[state] = maxq
+            self.values = res
+
+
 
     def getValue(self, state):
         """
@@ -77,7 +98,13 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        res = 0
+        transitions = self.mdp.getTransitionStatesAndProbs(state, action)
+
+        for next_state, probability in transitions:
+            reward = self.mdp.getReward(state, action, next_state)
+            res += probability * (reward + self.discount * self.values[next_state])
+        return res
 
     def computeActionFromValues(self, state):
         """
@@ -89,7 +116,23 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        actions = self.mdp.getPossibleActions(state)
+
+        # return none if there are no legal actions
+        if not actions:
+            return None
+        
+        # go through each action, find max action
+        max_q = float('-inf')
+        res = None
+
+        for action in actions:
+            tmp = self.computeQValueFromValues(state, action)
+            if tmp > max_q:
+                max_q = tmp
+                res = action
+        
+        return res
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
