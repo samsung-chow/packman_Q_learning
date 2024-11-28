@@ -96,13 +96,13 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        total = 0
+        qVal = 0
         actionPairs = self.mdp.getTransitionStatesAndProbs(state, action)
 
         for next_state, prob in actionPairs:
             reward = self.mdp.getReward(state, action, next_state)
-            total += prob * (reward + self.discount * self.values[next_state])
-        return total
+            qVal += prob * (reward + self.discount * self.values[next_state])
+        return qVal
 
 
     def computeActionFromValues(self, state):
@@ -165,3 +165,46 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
 
+        # I made this helper function, as this block of code was repeated in my logic
+        def GetBestActionValue(state):
+            best_action = self.computeActionFromValues(state)
+            if best_action:
+                return self.computeQValueFromValues(state, best_action)
+            else:
+                return 0
+
+        # Initialize Priority Queue using util.PriorityQueue() and predecessor tracking
+        pq = util.PriorityQueue()
+        predecessors = {state: set() for state in self.mdp.getStates()}
+
+        # Track state dependencies (aka the predecessors)
+        for state in self.mdp.getStates():
+            if not self.mdp.isTerminal(state):
+                for action in self.mdp.getPossibleActions(state):
+                    for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+                        predecessors[next_state].add(state)
+
+        # Initialize priority queue with state value differences
+        for state in self.mdp.getStates():
+            if not self.mdp.isTerminal(state):
+                best_action_value = GetBestActionValue(state)
+                diff = abs(best_action_value - self.values[state])
+                pq.update(state, -diff)
+
+        for i in range(self.iterations):
+            if pq.isEmpty():
+                break
+
+            # Pop state from queue, update its value, and push neighbours back into the queue
+            state = pq.pop()
+            if not self.mdp.isTerminal(state):
+                best_action_value = GetBestActionValue(state)
+                self.values[state] = best_action_value
+
+                # Update predecessors values and push to the priority queue
+                for pred_state in predecessors[state]:
+                    if not self.mdp.isTerminal(pred_state):
+                        best_action_value = GetBestActionValue(pred_state)
+                        diff = abs(best_action_value - self.values[pred_state])
+                        if diff > self.theta:
+                            pq.update(pred_state, -diff)
