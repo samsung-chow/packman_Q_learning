@@ -123,9 +123,18 @@ class QLearningAgent(ReinforcementAgent):
         legalActions = self.getLegalActions(state)
         action = None
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
 
-        return action
+        if not legalActions:
+            return action
+        
+        # Prbability of "exploration" (taking a random action)
+        exploration = util.flipCoin(self.epsilon)
+        if exploration:
+            return random.choice(legalActions)
+        
+        # If not exploring, take best policy possible at current state
+        return self.getPolicy(state)
+
 
     def update(self, state, action, nextState, reward):
         """
@@ -138,7 +147,7 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
         curQ = self.getQValue(state, action)
-        maxQ = self.computeValueFromQValues(nextState)
+        maxQ = self.getValue(nextState)
         updatedQ = curQ + self.alpha * (reward + self.discount * maxQ - curQ)
         self.qValues[(state, action)] = updatedQ
 
