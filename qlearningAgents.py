@@ -146,6 +146,8 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
+
+        # Q-Learning update
         curQ = self.getQValue(state, action)
         maxQ = self.getValue(nextState)
         updatedQ = curQ + self.alpha * (reward + self.discount * maxQ - curQ)
