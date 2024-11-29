@@ -66,11 +66,12 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Perform value iteration for self.iterations times
         for i in range(self.iterations):
             states = self.mdp.getStates()
-            temp_counter = util.Counter()  # Temporary counter to store updated values
 
-            # Loop over all states
+            # Using util.counter() as reccomended
+            temp_counter = util.Counter()
+
             for state in states:
-                # Call computeActionFromValues to get the best action's Q-value
+
                 best_action = self.computeActionFromValues(state)
 
                 # Possibility of best_action being None, so account for this
@@ -79,7 +80,6 @@ class ValueIterationAgent(ValueEstimationAgent):
                 else:
                     temp_counter[state] = 0
 
-            # Update values
             self.values = temp_counter
 
     def getValue(self, state):
