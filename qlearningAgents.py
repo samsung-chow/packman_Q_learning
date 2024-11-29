@@ -229,7 +229,8 @@ class ApproximateQAgent(PacmanQAgent):
 
         features = self.featExtractor.getFeatures(state, action)
         difference = (reward + self.discount * maxQ) - curQ
-
+        
+        # Using given formula in handout
         for feature in features:
             self.weights[feature] += self.alpha * difference * features[feature]
 
